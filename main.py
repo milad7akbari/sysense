@@ -4,7 +4,7 @@ import logging
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy.sql import text
-from app.api.v1.routes import health
+from app.api.v1.routes import health, auth
 from app.core.config import settings
 from app.core.logging_config import configure_logging
 from app.db import session as db_session
@@ -72,6 +72,9 @@ def create_app() -> FastAPI:
     # Including routers makes the project scalable.
     # app.include_router(auth.router, prefix="/auth", tags=["Auth"])
     app.include_router(health.router, prefix="/health", tags=["Health"])
+    app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+    app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
+    app.include_router(users.router, prefix="/api/v1", tags=["users"])
 
     return app
 

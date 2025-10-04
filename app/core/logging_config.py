@@ -4,7 +4,6 @@ from app.core.config import settings
 
 def configure_logging():
     root = logging.getLogger()
-    # remove default handlers
     root.handlers = []
 
     if settings.DEBUG or settings.ENV == "development":

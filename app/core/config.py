@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
+    ALGORITHM: str = "HS256"
 
     # CORS & hosts
     CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:3000"]
