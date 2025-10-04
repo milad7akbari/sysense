@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.PROJECT_NAME,
         version="1.0.0",
-        openapi_prefix="/api/v1",
+        openapi_prefix=settings.API_V1_STR,
         lifespan=lifespan,
     )
 
@@ -74,7 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/health", tags=["Health"])
     app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
     app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
-    app.include_router(users.router, prefix="/api/v1", tags=["users"])
+    # app.include_router(users.router, prefix="/api/v1", tags=["users"])
 
     return app
 

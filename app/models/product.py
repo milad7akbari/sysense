@@ -7,6 +7,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+from sqlalchemy.sql.schema import ForeignKey
 
 from app.db.base import Base, variant_attributes_table
 
@@ -22,7 +23,7 @@ class ProductType(enum.Enum):
 class Product(Base):
     __tablename__ = "products"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    seller_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), mapped_column.ForeignKey("sellers.id"))
+    seller_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("sellers.id"))
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     product_type: Mapped[ProductType] = mapped_column(Enum(ProductType), nullable=False, default=ProductType.NATIVE)
@@ -48,7 +49,7 @@ class Attribute(Base):
 class AttributeValue(Base):
     __tablename__ = "attribute_values"
     id: Mapped[int] = mapped_column(primary_key=True)
-    attribute_id: Mapped[int] = mapped_column(mapped_column.ForeignKey("attributes.id"))
+    attribute_id: Mapped[int] = mapped_column(ForeignKey("attributes.id"))
     value: Mapped[str] = mapped_column(String(100), nullable=False)
     __table_args__ = (UniqueConstraint('attribute_id', 'value', name='_attribute_value_uc'),)
 
@@ -58,7 +59,7 @@ class AttributeValue(Base):
 class ProductVariant(Base):
     __tablename__ = "product_variants"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), mapped_column.ForeignKey("products.id"))
+    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"))
     price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     stock_quantity: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     sku: Mapped[str | None] = mapped_column(String(100), unique=True)

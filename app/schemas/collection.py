@@ -3,7 +3,6 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 from .user import UserMinimal
-from .product import ProductMinimal
 
 class CollectionBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
@@ -20,4 +19,3 @@ class CollectionRead(CollectionBase):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
     user: UserMinimal
-    products: List[ProductMinimal] = []

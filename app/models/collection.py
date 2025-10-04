@@ -3,6 +3,7 @@ from typing import List, TYPE_CHECKING
 from sqlalchemy import String, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql.schema import ForeignKey
 
 from app.db.base import Base, collection_pins_table
 
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
 class Collection(Base):
     __tablename__ = "collections"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), mapped_column.ForeignKey("users.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     is_public: Mapped[bool] = mapped_column(Boolean, default=True)
 
