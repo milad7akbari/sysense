@@ -2,12 +2,11 @@ import uuid
 import enum
 from typing import List, TYPE_CHECKING
 from sqlalchemy import (
-    Enum, String, DateTime, Text, Boolean, Integer, Numeric, UniqueConstraint
+    Enum, String, DateTime, Text, Boolean, Integer, Numeric, UniqueConstraint, Table, Column, ForeignKey
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-from sqlalchemy.sql.schema import ForeignKey
 
 from app.db.base import Base, variant_attributes_table
 
@@ -18,6 +17,14 @@ if TYPE_CHECKING:
 class ProductType(enum.Enum):
     NATIVE = "NATIVE"
     REFERRAL = "REFERRAL"
+
+# Association table defined here to be close to its usage
+product_category_association = Table(
+    'product_category',
+    Base.metadata,
+    Column('product_id', UUID(as_uuid=True), ForeignKey('products.id'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('categories.id'), primary_key=True)
+)
 
 
 class Product(Base):
@@ -31,12 +38,30 @@ class Product(Base):
     display_price: Mapped[str | None] = mapped_column(String(100))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), onupdate=func.now(),
-                                                 server_default=func.now())
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now(), server_default=func.now()
+    )
 
     seller: Mapped["Seller"] = relationship(back_populates="products")
     variants: Mapped[List["ProductVariant"]] = relationship(back_populates="product", cascade="all, delete-orphan")
     liked_by_users: Mapped[List["User"]] = relationship(secondary="product_likes", back_populates="liked_products")
+    categories: Mapped[List["Category"]] = relationship(
+        secondary=product_category_association, back_populates="products"
+    )
+    images: Mapped[List["Image"]] = relationship(cascade="all, delete-orphan")
+
+
+class ProductVariant(Base):
+    __tablename__ = "product_variants"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"))
+    price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    stock_quantity: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    sku: Mapped[str | None] = mapped_column(String(100), unique=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    product: Mapped["Product"] = relationship(back_populates="variants")
+    attributes: Mapped[List["AttributeValue"]] = relationship(secondary=variant_attributes_table)
 
 
 class Attribute(Base):
@@ -56,14 +81,18 @@ class AttributeValue(Base):
     attribute: Mapped["Attribute"] = relationship(back_populates="values")
 
 
-class ProductVariant(Base):
-    __tablename__ = "product_variants"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"))
-    price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
-    stock_quantity: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    sku: Mapped[str | None] = mapped_column(String(100), unique=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+class Category(Base):
+    __tablename__ = "categories"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    # Added back_populates to complete the bidirectional relationship with Product
+    products: Mapped[List["Product"]] = relationship(
+        secondary=product_category_association, back_populates="categories"
+    )
 
-    product: Mapped["Product"] = relationship(back_populates="variants")
-    attributes: Mapped[List["AttributeValue"]] = relationship(secondary=variant_attributes_table)
+
+class Image(Base):
+    __tablename__ = "product_images"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"))
+    url: Mapped[str] = mapped_column(Text, nullable=False)

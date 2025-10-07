@@ -1,15 +1,15 @@
 import uuid
 from typing import List, TYPE_CHECKING
-from sqlalchemy import String, Boolean
+from sqlalchemy import String, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql.schema import ForeignKey
 
 from app.db.base import Base, collection_pins_table
 
 if TYPE_CHECKING:
     from .user import User
     from .product import Product
+
 
 class Collection(Base):
     __tablename__ = "collections"

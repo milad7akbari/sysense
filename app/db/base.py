@@ -25,5 +25,6 @@ collection_pins_table = Table(
 variant_attributes_table = Table(
     "variant_attributes", Base.metadata,
     Column("variant_id", UUID(as_uuid=True), ForeignKey("product_variants.id"), primary_key=True),
-    Column("value_id", Integer, ForeignKey("attribute_values.id"), primary_key=True),
+    # Corrected column name from 'value_id' to match usage
+    Column("attribute_value_id", Integer, ForeignKey("attribute_values.id"), primary_key=True),
 )

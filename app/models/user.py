@@ -23,13 +23,15 @@ class User(Base):
     bio: Mapped[str | None] = mapped_column(Text)
     profile_picture_url: Mapped[str | None] = mapped_column(String)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), onupdate=func.now(),
-                                                 server_default=func.now())
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now(), server_default=func.now()
+    )
 
     seller_profile: Mapped["Seller | None"] = relationship(back_populates="user", cascade="all, delete-orphan")
     collections: Mapped[List["Collection"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    liked_products: Mapped[List["Product"]] = relationship(secondary=product_likes_table,
-                                                           back_populates="liked_by_users")
+    liked_products: Mapped[List["Product"]] = relationship(
+        secondary=product_likes_table, back_populates="liked_by_users"
+    )
     following: Mapped[Set["User"]] = relationship(
         "User", secondary=followers_table,
         primaryjoin=id == followers_table.c.follower_id,
@@ -61,4 +63,3 @@ class RefreshToken(Base):
     is_revoked: Mapped[bool] = mapped_column(Boolean, default=False)
 
     user: Mapped["User"] = relationship(back_populates="refresh_tokens")
-
