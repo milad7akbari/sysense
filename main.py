@@ -70,11 +70,8 @@ def create_app() -> FastAPI:
 
     # --- API Routers ---
     # Including routers makes the project scalable.
-    # app.include_router(auth.router, prefix="/auth", tags=["Auth"])
     app.include_router(health.router, prefix="/health", tags=["Health"])
-    app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
-    app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
-    # app.include_router(users.router, prefix="/api/v1", tags=["users"])
+    app.include_router(auth.router)
 
     return app
 
