@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # DB
     DATABASE_URL: Optional[PostgresDsn] = None
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
+    REDIS_URL: str
 
     # JWT
     SECRET_KEY: str

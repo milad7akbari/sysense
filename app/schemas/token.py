@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 import re
 
@@ -18,15 +18,11 @@ class Token(BaseModel):
 
 
 class PhoneNumberRequest(BaseModel):
-    """شمای درخواست ارسال OTP با شماره موبایل."""
-    phone_number: str = Field(..., description="شماره موبایل کاربر (مانند 0912xxxxxxx)")
-
-    @validator('phone_number')
+    phone_number: str = Field(..., description="شماره موبایل کاربر")
+    @field_validator('phone_number')
     def validate_phone_number(cls, v):
-        """اعتبارسنجی ساده شماره موبایل ایرانی."""
-        # الگو: شروع با 09 و به دنبال آن 9 رقم دیگر
         if not re.match(r'^09\d{9}$', v):
-            raise ValueError('شماره موبایل نامعتبر است. فرمت صحیح: 09xxxxxxxxx')
+            raise ValueError('شماره موبایل نامعتبر است.')
         return v
 
 
@@ -47,6 +43,7 @@ class UserInfo(BaseModel):
     phone_number: str
     is_superuser: bool
 
-    class Config:
-        # فعال کردن از attributes برای سازگاری با مدل SQLAlchemy
-        from_attributes = True
+    # CORRECTED: Replaced inner Config class with model_config
+    model_config = ConfigDict(
+        from_attributes=True,  # فعال کردن از attributes برای سازگاری با مدل SQLAlchemy
+    )

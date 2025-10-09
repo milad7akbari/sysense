@@ -3,13 +3,20 @@ from typing import List, TYPE_CHECKING
 from sqlalchemy import String, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql.schema import Table, Column
 
-from app.db.base import Base, collection_pins_table
+from app.db.base import Base
 
 if TYPE_CHECKING:
     from .user import User
     from .product import Product
 
+
+collection_pins_table = Table(
+    "collection_pins", Base.metadata,
+    Column("collection_id", UUID(as_uuid=True), ForeignKey("collections.id"), primary_key=True),
+    Column("product_id", UUID(as_uuid=True), ForeignKey("products.id"), primary_key=True),
+)
 
 class Collection(Base):
     __tablename__ = "collections"
