@@ -6,6 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User, RefreshToken, OtpRequest
+from app.schemas.user import UserUpdate
+
 
 async def get_user_by_phone(db: AsyncSession, phone_number: str) -> Optional[User]:
     """Fetches a user by their phone number."""
@@ -66,3 +68,17 @@ async def get_refresh_token_by_jti(db: AsyncSession, hashed_jti: str, user_id: u
     )
     result = await db.execute(stmt)
     return result.scalar_one_or_none()
+
+
+
+async def update_user(db: AsyncSession, db_user: User, user_in: UserUpdate) -> User:
+    # Get the update data as a dictionary, excluding any fields that were not set
+    update_data = user_in.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(db_user, field, value)
+
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+    return db_user

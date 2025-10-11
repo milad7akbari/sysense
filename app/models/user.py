@@ -20,9 +20,10 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     phone_number: Mapped[str] = mapped_column(String(20), unique=True, index=True, nullable=False)
-    username: Mapped[str | None] = mapped_column(String(50), unique=True, index=True)
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
-    full_name: Mapped[str | None] = mapped_column(String(100))
+    firstname: Mapped[str | None] = mapped_column(String(100))
+    lastname: Mapped[str | None] = mapped_column(String(100))
     bio: Mapped[str | None] = mapped_column(Text)
     profile_picture_url: Mapped[str | None] = mapped_column(String)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())

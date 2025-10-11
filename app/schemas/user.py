@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, HttpUrl, ConfigDict
+from pydantic import BaseModel, Field, HttpUrl, ConfigDict, EmailStr
 
 class UserMinimal(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -63,3 +63,11 @@ class UserRead(UserBase):
     phone_number: str
     created_at: datetime
     seller_profile: Optional[SellerRead] = None
+
+
+# Base model with shared attributes
+class UserBase(BaseModel):
+    email: Optional[EmailStr] = None
+    firstname: Optional[str] = None
+    lastname: Optional[str] = None
+    bio: Optional[str] = None
