@@ -1,22 +1,31 @@
+import hashlib
 import secrets
 import string
-import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
-
+from pydantic import BaseModel
 from jose import jwt
 from passlib.context import CryptContext
-
+from fastapi.security import OAuth2PasswordBearer
 from app.core.config import settings
 
-# This should be defined once in your application, using Argon2 as recommended
 pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
 
+class TokenPayload(BaseModel):
+    sub: str
+    exp: datetime
+    type: str
+    jti: str
 
+def decode_token(token: str) -> TokenPayload | None:
+    try:
+        payload_dict = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        return TokenPayload(**payload_dict) # <-- Returns an object, not a dict
+    except (jwt.JWTError, Exception):
+        return None
 
-def generate_otp(length: int = 6) -> str:
+def generate_otp(length: int = 1) -> str:
     return ''.join(secrets.choice(string.digits) for _ in range(length))
 
 
@@ -41,44 +50,27 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-# --- JWT Token Functions (Updated) ---
-
 def create_access_token(user_identifier: str) -> str:
-    """
-    Creates a new Access Token.
-    Args:
-        user_identifier: The subject of the token (e.g., user ID).
-    """
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {
         "sub": user_identifier,
+        "type": "access",
         "exp": expire,
     }
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/verify-otp")
 
-def create_refresh_token(user_identifier: str) -> str:
-    """
-    Creates a new Refresh Token with a unique JTI.
-    Args:
-        user_identifier: The subject of the token (e.g., user ID).
-    """
+def create_refresh_token(user_identifier: str, jti: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode = {
         "sub": user_identifier,
         "exp": expire,
-        "jti": str(uuid.uuid4()),  # JWT ID for revocation
+        "type": "refresh",
+        "jti": jti, # <-- Use the provided jti
     }
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
+def hash_jti(jti: str) -> str:
+    return hashlib.sha256(jti.encode()).hexdigest()
 
-def decode_token(token: str) -> Dict[str, Any] | None:
-    """
-    Decodes a JWT token.
-    Returns the payload dictionary on success, None on failure.
-    """
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except jwt.JWTError:
-        return None
