@@ -4,9 +4,10 @@ from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.user import User, RefreshToken, OtpRequest
-from app.schemas.user import UserUpdate
+from app.schemas.user import UserBase
 
 
 async def get_user_by_phone(db: AsyncSession, phone_number: str) -> Optional[User]:
@@ -71,7 +72,7 @@ async def get_refresh_token_by_jti(db: AsyncSession, hashed_jti: str, user_id: u
 
 
 
-async def update_user(db: AsyncSession, db_user: User, user_in: UserUpdate) -> User:
+async def update_user(db: AsyncSession, db_user: User, user_in: UserBase) -> User:
     # Get the update data as a dictionary, excluding any fields that were not set
     update_data = user_in.model_dump(exclude_unset=True)
 
@@ -80,5 +81,19 @@ async def update_user(db: AsyncSession, db_user: User, user_in: UserUpdate) -> U
 
     db.add(db_user)
     await db.commit()
-    await db.refresh(db_user)
-    return db_user
+
+    user_id = db_user.id
+
+    # 2. Execute a new query to get the user and the seller_profile
+    query = (
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.seller_profile),
+            selectinload(User.collections)  # Eager load any other relationships needed by UserRead
+        )
+    )
+    result = await db.execute(query)
+    updated_user = result.scalar_one_or_none()
+
+    return updated_user
