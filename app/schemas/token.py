@@ -27,13 +27,11 @@ class PhoneNumberRequest(BaseModel):
 
 
 class OTPVerification(BaseModel):
-    """شمای درخواست اعتبارسنجی OTP."""
     phone_number: str
-    otp_code: str = Field(..., min_length=4, max_length=6, description="کد OTP دریافتی (معمولاً 4 تا 6 رقمی)")
+    otp_code: str = Field(..., min_length=1, max_length=6, description="کد OTP دریافتی (معمولاً 4 تا 6 رقمی)")
 
 
 class RefreshTokenRequest(BaseModel):
-    """شمای درخواست رفرش توکن."""
     refresh_token: str
 
 

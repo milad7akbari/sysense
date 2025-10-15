@@ -20,9 +20,10 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     phone_number: Mapped[str] = mapped_column(String(20), unique=True, index=True, nullable=False)
-    username: Mapped[str | None] = mapped_column(String(50), unique=True, index=True)
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
-    full_name: Mapped[str | None] = mapped_column(String(100))
+    firstname: Mapped[str | None] = mapped_column(String(100))
+    lastname: Mapped[str | None] = mapped_column(String(100))
     bio: Mapped[str | None] = mapped_column(Text)
     profile_picture_url: Mapped[str | None] = mapped_column(String)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -55,14 +56,6 @@ class OtpRequest(Base):
 
     @classmethod
     def create(cls, phone_number: str, hashed_otp: str, ttl_seconds: int = 300) -> "OtpRequest":
-        """
-        Create a new OTPRequest instance with expiration time.
-
-        Args:
-            phone_number: user's phone number
-            hashed_otp: hashed OTP string
-            ttl_seconds: time-to-live in seconds (default 5 min)
-        """
         expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
         return cls(phone_number=phone_number, hashed_otp=hashed_otp, expires_at=expires_at)
 
@@ -80,13 +73,14 @@ class Seller(Base):
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
+
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    token: Mapped[str] = mapped_column(String, index=True, nullable=False)
+
+    hashed_jti: Mapped[str] = mapped_column(String, index=True, nullable=False, unique=True)
+
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    expires_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    created_at: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
     is_revoked: Mapped[bool] = mapped_column(Boolean, default=False)
+    expires_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     user: Mapped["User"] = relationship(back_populates="refresh_tokens")
-
-
