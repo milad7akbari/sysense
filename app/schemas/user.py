@@ -1,12 +1,11 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, HttpUrl, ConfigDict
+from pydantic import BaseModel, Field, HttpUrl, ConfigDict, EmailStr
 
 class UserMinimal(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
-    username: Optional[str] = None
     profile_picture_url: Optional[HttpUrl] = None
 
 class SellerMinimal(BaseModel):
@@ -46,7 +45,6 @@ class SellerRead(SellerBase):
     is_verified: bool
 
 class UserBase(BaseModel):
-    username: Optional[str] = Field(None, min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
     full_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = None
     profile_picture_url: Optional[HttpUrl] = None
@@ -54,12 +52,17 @@ class UserBase(BaseModel):
 class UserCreate(BaseModel):
     phone_number: str = Field(..., pattern=r"^\+?[1-9]\d{1,14}$", description="E.164 format")
 
-class UserUpdate(UserBase):
-    pass
-
 class UserRead(UserBase):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
     phone_number: str
     created_at: datetime
     seller_profile: Optional[SellerRead] = None
+
+
+# Base model with shared attributes
+class UserBase(BaseModel):
+    email: Optional[EmailStr] = None
+    firstname: Optional[str] = None
+    lastname: Optional[str] = None
+    bio: Optional[str] = None

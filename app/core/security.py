@@ -21,8 +21,12 @@ class TokenPayload(BaseModel):
 def decode_token(token: str) -> TokenPayload | None:
     try:
         payload_dict = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-        return TokenPayload(**payload_dict) # <-- Returns an object, not a dict
-    except (jwt.JWTError, Exception):
+        return TokenPayload(**payload_dict)
+    except jwt.ExpiredSignatureError as e:
+        print(e)
+        return None
+    except (jwt.JWTError, Exception) as e:
+        print(e)
         return None
 
 def generate_otp(length: int = 1) -> str:
@@ -50,11 +54,12 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_access_token(user_identifier: str) -> str:
+def create_access_token(user_identifier: str, jti: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {
         "sub": user_identifier,
         "type": "access",
+        "jti": jti,
         "exp": expire,
     }
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
@@ -67,7 +72,7 @@ def create_refresh_token(user_identifier: str, jti: str) -> str:
         "sub": user_identifier,
         "exp": expire,
         "type": "refresh",
-        "jti": jti, # <-- Use the provided jti
+        "jti": jti,
     }
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 

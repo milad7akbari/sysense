@@ -5,13 +5,14 @@ from app.core import security
 from app.db.session import get_async_db
 from app.models.user import User
 from app.crud import user as user_crud
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/verify-otp")
 
 async def get_current_user(
         db: AsyncSession = Depends(get_async_db),
-        token: str = Depends(security.oauth2_scheme)
+        token: str = Depends(oauth2_scheme)
 ) -> User:
     payload = security.decode_token(token)
-
     if not payload or payload.type != 'access':
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -52,6 +52,7 @@ async def send_otp(
 @router.post("/verify-otp", response_model=Token)
 async def verify_otp(request: OTPVerification, db: AsyncSession = Depends(get_async_db)):
     otp_record = await user_crud.get_valid_otp(db, request.phone_number)
+    print(otp_record)
     if not otp_record or not security.verify_otp(request.otp_code, otp_record.hashed_otp):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired OTP code.")
 
@@ -62,7 +63,7 @@ async def verify_otp(request: OTPVerification, db: AsyncSession = Depends(get_as
     # Token Generation
     new_jti = str(uuid.uuid4())
     user_identifier = str(user.id)
-    access_token = security.create_access_token(user_identifier=user_identifier)
+    access_token = security.create_access_token(user_identifier=user_identifier, jti=new_jti)
     refresh_token = security.create_refresh_token(user_identifier=user_identifier, jti=new_jti)
 
     # Store Refresh Token
