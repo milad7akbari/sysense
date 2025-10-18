@@ -11,4 +11,11 @@ router = APIRouter(prefix="", tags=["Products"])
 @router.get("/feed", response_model=List[ProductFeedItemSchema])
 async def get_guest_feed(db: AsyncSession = Depends(get_async_db)):
     products = await product_crud.get_guest_feed_products(db, limit=20)
+
+    for product in products:
+        if product.images:
+            product.images = [product.images[0]]
+        else:
+            product.images = []
+
     return products
