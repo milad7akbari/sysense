@@ -4,7 +4,7 @@ import logging
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy.sql import text
-from app.api.v1.routes import health, auth, user, product as product_router
+from app.api.v1.routes import health, auth, user, product as product_router, interaction as interaction_router
 from app.core.config import settings
 from app.core.logging_config import configure_logging
 from app.db import session as db_session
@@ -74,6 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(user.router, prefix="/users")
     app.include_router(product_router.router, prefix="/products")
     app.include_router(auth.router)
+    app.include_router(interaction_router.router)
 
     return app
 
