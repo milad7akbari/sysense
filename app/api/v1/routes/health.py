@@ -1,14 +1,10 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 from sqlalchemy.sql import text
 
 from app.db import session as db_session
+from app.schemas.common import HealthStatus
 
 router = APIRouter()
-
-class HealthStatus(BaseModel):
-    status: str
-    detail: str | None = None
 
 @router.get(
     "",
@@ -22,5 +18,4 @@ async def health_check():
             await conn.execute(text("SELECT 1"))
         return HealthStatus(status="ok")
     except Exception as exc:
-        # In a real app, you might want to log this error
         return HealthStatus(status="unhealthy", detail=str(exc))

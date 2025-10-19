@@ -1,9 +1,11 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn, AnyHttpUrl, field_validator, ValidationInfo
 from typing import List, Optional, Any
 import os
 
-
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra='ignore')
 
@@ -30,13 +32,17 @@ class Settings(BaseSettings):
     # Rate limiting
     RATE_LIMIT: int = 120  # per minute
 
+    # Log File
+    LOG_FILE_PATH: str = f"{BASE_DIR}/logs/app.log"
+    LOG_LEVEL: str = "INFO"
+
     # DB pool tuning
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
     DB_POOL_TIMEOUT: int = 30
 
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode='before')
     @classmethod
+    @field_validator("SQLALCHEMY_DATABASE_URI", mode='before')
     def assemble_db_uri(cls, v: Optional[str], info: ValidationInfo) -> Any:
         if isinstance(v, str):
             return v
