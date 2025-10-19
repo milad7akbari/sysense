@@ -1,9 +1,13 @@
+from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
 
 from app.core.config import settings
 
-DATABASE_URL = settings.SQLALCHEMY_DATABASE_URI
+if not settings.SQLALCHEMY_DATABASE_URI:
+    raise ValueError("SQLALCHEMY_DATABASE_URI is not set in the configuration.")
+
+DATABASE_URL = str(settings.SQLALCHEMY_DATABASE_URI)
 
 engine = create_async_engine(
     DATABASE_URL,
@@ -12,17 +16,15 @@ engine = create_async_engine(
     pool_size=settings.DB_POOL_SIZE,
     max_overflow=settings.DB_MAX_OVERFLOW,
     pool_timeout=settings.DB_POOL_TIMEOUT,
-    future=True,
 )
 
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 Base = declarative_base()
 
-async def get_async_db() -> AsyncSession:
+async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
+    """
+    FastAPI dependency that provides an async database session.
+    """
     async with async_session() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
-
+        yield session
