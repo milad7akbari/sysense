@@ -29,7 +29,7 @@ class Collection(Base):
     is_default_favorites: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
 
     user: Mapped["User"] = relationship(back_populates="collections")
-    products: Mapped[List["Product"]] = relationship(secondary=collection_pins_table)
+    products: Mapped[List["Product"]] = relationship(secondary=collection_pins_table, cascade="all, delete")
     ble_args__ = (
         Index(
             '_user_default_favorites_uc',
