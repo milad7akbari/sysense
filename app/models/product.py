@@ -45,6 +45,13 @@ class Product(Base):
     updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
                                                  onupdate=func.now())
     images: Mapped[List["ProductImage"]] = relationship(back_populates="product", cascade="all, delete-orphan")
+
+    @property
+    def primary_image(self):
+        if self.images:
+            return self.images[0]
+        return None
+
     categories: Mapped[List["Category"]] = relationship(secondary=product_category_association,
                                                         back_populates="products", lazy="selectin")
     attributes: Mapped[List["AttributeValue"]] = relationship(secondary=product_attribute_association,

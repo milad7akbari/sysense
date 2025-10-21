@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import uuid
-from typing import List
+from typing import Optional
+
 
 class ProductImageSchema(BaseModel):
     url: str
@@ -19,7 +20,7 @@ class ProductFeedItemSchema(BaseModel):
     name: str
     selling_price: int
     brand: BrandSchema
-    images: List[ProductImageSchema] = Field(..., max_items=1)
+    primary_image: Optional[ProductImageSchema] = None
 
     class Config:
         orm_mode = True

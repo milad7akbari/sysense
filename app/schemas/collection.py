@@ -2,6 +2,7 @@ import uuid
 from typing import List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
+from .product import BrandSchema, ProductImageSchema
 from .user import UserMinimal
 
 class CollectionBase(BaseModel):
@@ -19,3 +20,12 @@ class CollectionRead(CollectionBase):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
     user: UserMinimal
+
+class ProductFavoriteItemSchema(CollectionBase):
+    product_id: uuid.UUID
+    id: uuid.UUID
+    selling_price: int
+    primary_image: Optional[ProductImageSchema] = None
+
+    class Config:
+        orm_mode = True
