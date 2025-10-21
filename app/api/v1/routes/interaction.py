@@ -8,7 +8,6 @@ from app.db.session import get_async_db
 from app.models.user import User
 from app.schemas.interaction import InteractionCreate, InteractionRead, InteractionWithProduct
 from app.crud import interaction as interaction_crud
-from app.crud import collection as collection_crud
 
 router = APIRouter(prefix="/me/interactions", tags=["Interactions"])
 
@@ -50,24 +49,4 @@ async def remove_interaction(
     deleted = await interaction_crud.delete_interaction(db, user_id=current_user.id, product_id=product_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Interaction not found.")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@router.delete("/favorites/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_product_from_favorites(
-        product_id: uuid.UUID,
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_async_db)
-):
-    """
-    Removes a product from the user's default 'Favorites' list.
-    """
-    favorites_collection = await collection_crud.get_or_create_favorites_collection(db, user_id=current_user.id)
-
-    removed = await collection_crud.remove_product_from_collection(db, collection=favorites_collection,
-                                                                   product_id=product_id)
-
-    if not removed:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found in favorites.")
-
     return Response(status_code=status.HTTP_204_NO_CONTENT)

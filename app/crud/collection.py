@@ -22,12 +22,11 @@ async def get_or_create_favorites_collection(db: AsyncSession, user_id: uuid.UUI
     favorites_collection = result.scalar_one_or_none()
 
     if not favorites_collection:
-        # Create the default collection with the flag set to True
         favorites_collection = Collection(
             user_id=user_id,
-            name="علاقه‌مندی‌ها",  # This name is for display purposes
+            name="favorite",
             is_public=False,
-            is_default_favorites=True  # The key change is here
+            is_default_favorites=True
         )
         db.add(favorites_collection)
         await db.commit()

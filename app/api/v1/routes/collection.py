@@ -9,11 +9,10 @@ from app.models.user import User
 from app.schemas.product import ProductFeedItemSchema
 from app.crud import collection as collection_crud
 
-# All routes in this file start with /me
-router = APIRouter(prefix="/me", tags=["Profile & Collections"])
+router = APIRouter(prefix="/me/favorites", tags=["Profile & Collections"])
 
 
-@router.post("/favorites/{product_id}", status_code=status.HTTP_201_CREATED, summary="Add a product to favorites")
+@router.post("/{product_id}", status_code=status.HTTP_201_CREATED, summary="Add a product to favorites")
 async def add_product_to_favorites(
         product_id: uuid.UUID,
         current_user: User = Depends(get_current_user),
@@ -35,7 +34,7 @@ async def add_product_to_favorites(
     return {"message": "Product added to favorites successfully."}
 
 
-@router.get("/favorites", response_model=List[ProductFeedItemSchema], summary="Get user's favorite products")
+@router.get("", response_model=List[ProductFeedItemSchema], summary="Get user's favorite products")
 async def get_my_favorites(
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_async_db)
@@ -48,7 +47,7 @@ async def get_my_favorites(
     return products
 
 
-@router.delete("/favorites/{product_id}", status_code=status.HTTP_204_NO_CONTENT,
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT,
                summary="Remove a product from favorites")
 async def remove_product_from_favorites(
         product_id: uuid.UUID,
