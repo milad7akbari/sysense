@@ -3,7 +3,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.dependencies import get_current_user
 from app.db.session import get_async_db
+from app.models import User
 from app.schemas.product import ProductFeedItemSchema, ProductDetailSchema
 from app.crud import product as product_crud
 
@@ -40,3 +42,16 @@ async def get_product_details(
     product_data['seller'] = product.seller.user
 
     return product_data
+
+
+@router.get("/feed/personalized", response_model=List[ProductFeedItemSchema])
+async def get_personalized_feed(
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user) # This endpoint is now protected
+):
+    """
+    Provides a personalized feed for the currently logged-in user based on their
+    interactions and saved items. Simulates the output of a recommendation engine.
+    """
+    products = await product_crud.get_personalized_feed_for_user(db, user=current_user, limit=20)
+    return products
