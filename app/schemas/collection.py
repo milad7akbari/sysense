@@ -1,8 +1,8 @@
 import uuid
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
 
-from .product import BrandSchema, ProductImageSchema
+from .product import ProductImageSchema
 from .user import UserMinimal
 
 class CollectionBase(BaseModel):
