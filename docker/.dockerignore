@@ -1,0 +1,57 @@
+# Ignore Python virtual environments
+.venv
+venv
+ENV
+env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE & Editor settings
+.idea/
+.vscode/
+*.swp
+
+# Logs & temp files
+*.log
+*.tmp
+*.out
+*.pid
+
+# Test & coverage
+.coverage
+.pytest_cache/
+htmlcov/
+tests/
+
+# Git files
+.git
+.gitignore
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Cache & package metadata
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Docker itself
+Dockerfile*
+docker-compose*.yml
+
+# Environment and configuration
+.env
+.env.*
+*.ini
+
+# Alembic cache
+alembic/__pycache__/
+alembic/versions/__pycache__/
+
+# Not needed docs
+README*
